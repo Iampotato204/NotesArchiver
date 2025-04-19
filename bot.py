@@ -23,7 +23,7 @@ from chat import *
 # import tempfile as tempfile
 
 
-API_TOKEN = '1234567890:abcdefghijklmnopqrstuvwxyzABCDEFGH'
+API_TOKEN = '1234567890:abcdefghijklmnopqrstuvwxyzABCDEFGHI'
 bot = telebot.TeleBot(API_TOKEN)
 print(f'INF: Bot info: {bot.get_me()}')
 user_lang = "en"
@@ -64,7 +64,6 @@ def show_note(tgid, note_type, note_id):
                     # db_handler.note_file_upload(tgid,file_binary,full_filename)
                     # db_handler.note_file_upload(tgid,file_binary,orig_filename)
 
-                        
             with tempfile.TemporaryDirectory() as tmpdirname:
                 filetosend_w = open(f'{tmpdirname}/{filename}', 'wb')
                 filetosend_w.write(filenote[0])
@@ -130,8 +129,8 @@ def handle_file(tag, message):
     tgid = message.from_user.id
     # print('DOC:',tag,':', tgid, interactions_flag_get(tgid))
     communicate_file(db_handler, message, bot, tag) # unclutter bot.py
-    
-    
+
+
 
 @bot.callback_query_handler(func=lambda call: True)
 def answer(call):
@@ -155,43 +154,18 @@ def answer(call):
                     db_handler.note_delete(tgid,note_id,'text')
                 case 2: # file
                     db_handler.note_delete(tgid,note_id,'file')
-        case "categories":
-            # callback_types_custom_tag_id
-            match callback_data_list[7]:
-                case "my_category_upload_file":
-                    interactions_flag_update('wait_for_file_with_products', tgid, callback_data_list)
-                    bot.send_message(tgid, text='Upload the file:')                    
 
-                case "buy_keyboard_all_categories":
-                    # shows shop-rating-shop category
-                    list_with_categories = db_handler.get_categories_within(callback_data_list[2])
-                    select_sub1_to_buy_from(tgid, list_with_categories)
-
-        case "edit_category":
-            match callback_data_list[1]:
-                case 'rename':
-                    bot.send_message(tgid, text='Enter the new title:', parse_mode='html')
-                    print("Rename:", callback_data_list)
-                    interactions_flag_update("edit_category_rename", tgid, callback_data_list)
-                case 'change_description':
-                    bot.send_message(tgid, text='Enter the new description:', parse_mode='html')
-                    interactions_flag_update("edit_category_change_description", tgid, callback_data_list)
-
-    match call.data:
-        case 'seller_want_add_product':
-            list_with_categories = db_handler.get_shop_categories_sorted(tgid)
-            list_with_categories = filter(lambda el: (el[11] != 2), list_with_categories)
-            reply_kb_list = categories_sub1_kb(0, tgid, list_with_categories, "my_category_upload_file", True)
-            bot.send_message(tgid, text='Your Categories:', reply_markup=reply_kb_list)
 
 
 if __name__ == '__main__':
     db_handler = sql_h.SqlHandler()
-    print("INF: BOT STARTED")
+    print('INF: BOT STARTED')
 
     # interactions_flag_clear(user_id)
     # when bot is reset, we need to update the reply_markup keyboard. It can be applied only if message was sent
     for user_id in db_handler.get_all_users_ids():
-        sent_msg_id = bot.send_message(user_id, text='temp',reply_markup=start_markup(0)).message_id
-        #print('deleted? ',bot.delete_message(user_id[0], sent_msg_id))
+        sent_msg_id = bot.send_message(user_id, text='bot restarted',reply_markup=start_markup(0)).message_id
+        # print('INF:',user_id,' deleted? ',bot.delete_message(user_id, sent_msg_id)) #deletes temp message, but keyboard is deleted as well
+        
+    # print('INF: KEYBOARD RESET')
     bot.infinity_polling(none_stop=True)
